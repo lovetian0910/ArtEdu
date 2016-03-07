@@ -1,8 +1,8 @@
 package com.kjw.artedu;
 
+import android.os.Bundle;
 import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -13,8 +13,6 @@ import java.io.IOException;
 
 import okhttp3.Call;
 import okhttp3.Callback;
-import okhttp3.Headers;
-import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -42,7 +40,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void upload() {
-        File file = new File(Environment.getExternalStorageDirectory() + "/netease/cloudmusic/Music/miwa - chAngE.mp3");
+        File file = new File(Environment.getExternalStorageDirectory() + "/log.txt");
         //此文件必须在手机上存在，实际情况下请自行修改，这个目录下的文件只是在我手机中存在。
 
 
@@ -50,11 +48,11 @@ public class MainActivity extends AppCompatActivity {
         final ProgressRequestListener progressListener = new ProgressRequestListener() {
             @Override
             public void onRequestProgress(long bytesWrite, long contentLength, boolean done) {
-                Log.e("TAG", "bytesWrite:" + bytesWrite);
-                Log.e("TAG", "contentLength" + contentLength);
-                Log.e("TAG", (100 * bytesWrite) / contentLength + " % done ");
-                Log.e("TAG", "done:" + done);
-                Log.e("TAG", "================================");
+                Log.e("ProgressRequestListener", "bytesWrite:" + bytesWrite);
+                Log.e("ProgressRequestListener", "contentLength" + contentLength);
+                Log.e("ProgressRequestListener", (100 * bytesWrite) / contentLength + " % done ");
+                Log.e("ProgressRequestListener", "done:" + done);
+                Log.e("ProgressRequestListener", "================================");
             }
         };
 
@@ -63,28 +61,30 @@ public class MainActivity extends AppCompatActivity {
         final UIProgressListener uiProgressRequestListener = new UIProgressListener() {
             @Override
             public void onUIRequestProgress(long bytesWrite, long contentLength, boolean done) {
-                Log.e("TAG", "bytesWrite:" + bytesWrite);
-                Log.e("TAG", "contentLength" + contentLength);
-                Log.e("TAG", (100 * bytesWrite) / contentLength + " % done ");
-                Log.e("TAG", "done:" + done);
-                Log.e("TAG", "================================");
+                Log.e("UIProgressListener", "bytesWrite:" + bytesWrite);
+                Log.e("UIProgressListener", "contentLength" + contentLength);
+                Log.e("UIProgressListener", (100 * bytesWrite) / contentLength + " % done ");
+                Log.e("UIProgressListener", "done:" + done);
+                Log.e("UIProgressListener", "================================");
                 //ui层回调
-                mProgressTv.setText(String.valueOf((bytesWrite / contentLength)*100) + "%");
+                mProgressTv.setText(String.valueOf((100 * bytesWrite / contentLength)) + "%");
                 //Toast.makeText(getApplicationContext(), bytesWrite + " " + contentLength + " " + done, Toast.LENGTH_LONG).show();
             }
         };
 
         //构造上传请求，类似web表单
-        RequestBody fileBody = RequestBody.create(MediaType.parse("audio/mp3"), file);
+        RequestBody fileBody = RequestBody.create(null, "");
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
-                .addFormDataPart("myfile", "filename=" + file.getName(), fileBody)
+                .addFormDataPart("myfile", file.getName(), fileBody)
+                .addFormDataPart("myfile", "123123", RequestBody.create(null,"12123123"))
                 .build();
 
 
         //进行包装，使其支持进度回调
-        final Request request = new Request.Builder().url("http://192.168.1.110:8002/upload")
-                .post(ProgressRequestBody.addProgressRequestListener(requestBody, uiProgressRequestListener)).build();
+        final Request request = new Request.Builder().url("http://10.70.148.137:8011/upload")
+                .post(ProgressRequestBody.addProgressRequestListener(requestBody, uiProgressRequestListener))
+                .build();
         //开始请求
         mClient.newCall(request).enqueue(new Callback() {
             @Override
